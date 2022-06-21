@@ -15,7 +15,7 @@ typedef std::vector< float > state_type;
 constexpr int NUM_STEPS = 100;
 constexpr float initial_angle = glm::radians(10.0f);
 constexpr float gravity = 9.81f;
-constexpr float spring_constant = 15.0f;
+constexpr float spring_constant = 75.0f;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -69,7 +69,7 @@ int main() {
 	theta[1] = 0.0f;
 
 	state_type spring_state(4); // x, x', theta, theta'
-	spring_state[0] = 1.0f; // initial length always 1 to make scaling easier
+	spring_state[0] = 0.0f; // initial length always 1 to make scaling easier
 	spring_state[1] = 0.0f;
 	spring_state[2] = initial_angle;
 	spring_state[3] = 0.0f;
@@ -81,7 +81,7 @@ int main() {
 	Shader particleShader("particle.vert", "particle.frag");
 	
 	ParticleGenerator* Particles;
-	Particles = new ParticleGenerator(particleShader, 5000, color3, 0.5f);
+	Particles = new ParticleGenerator(particleShader, 5000, color3, 0.1f);
 
 	unsigned int VAO, VBO, EBO;
 	glGenBuffers(1, &VBO);
@@ -148,7 +148,7 @@ int main() {
 		trans = glm::mat4(1.0f);
 		trans = glm::translate(trans, glm::vec3(0.0f, 0.5f, 0.0f));
 		trans = glm::rotate(trans, spring_state[2], glm::vec3(0.0f, 0.0f, 1.0f));
-		trans = glm::scale(trans, glm::vec3(1.0f, spring_state[0], 1.0f));
+		trans = glm::scale(trans, glm::vec3(1.0f, 1.0f + spring_state[0], 1.0f));
 		trans = glm::translate(trans, glm::vec3(0.0f, -0.5f, 0.0f));
 
 		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
@@ -157,7 +157,7 @@ int main() {
 		// glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-		Particles->Update(deltaTime, glm::vec2(spring_state[0] * sin(spring_state[2]), 0.5f - spring_state[0] * cos(spring_state[2])), 1);
+		Particles->Update(deltaTime, glm::vec2((1.0f + spring_state[0]) * sin(spring_state[2]), 0.5f - (1.0f + spring_state[0]) * cos(spring_state[2])), 1);
 		Particles->Draw();
 
 		glfwSwapBuffers(window);

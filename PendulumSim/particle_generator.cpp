@@ -104,4 +104,5 @@ void ParticleGenerator::respawnParticle(Particle& particle, glm::vec2 position, 
 {
     particle.Position = position;
     particle.Life = 1.0f;
+    particle.Color.w = 1.0f;
 }

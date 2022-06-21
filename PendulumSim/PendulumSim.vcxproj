@@ -22,7 +22,7 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="own_shaders.cpp" />
     <ClCompile Include="particle_generator.cpp" />
-    <ClCompile Include="Pendulum.cpp" />
+    <ClCompile Include="Simulator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="own_shaders.h" />
