@@ -69,4 +69,4 @@
 # display as a C project, so I'm kicking it off GitHub language analytics.
 ###############################################################################
 
-PendulumSim/glad.c   linguist-language=Java
+*.c   linguist-language=Java
