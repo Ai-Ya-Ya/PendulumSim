@@ -29,18 +29,21 @@ class ParticleGenerator
 {
 public:
     // constructor
-    ParticleGenerator(Shader shader, unsigned int amount, glm::vec3 color, float decay = 1.0f);
+    ParticleGenerator(Shader* shader, unsigned int amount, glm::vec3 color, float decay = 1.0f);
     // update all particles
     void Update(float dt, glm::vec2 position, unsigned int newParticles, glm::vec2 offset = glm::vec2(0.0f, 0.0f));
     // render all particles
     void Draw();
+    static void setup();
+    static unsigned int VAO;
+    static unsigned int VBO;
+    static float particle_quad[12];
 private:
     // state
     std::vector<Particle> particles;
     unsigned int amount;
     // render state
-    Shader shader;
-    unsigned int VAO;
+    Shader* shader;
     float decay;
 
     // particle color

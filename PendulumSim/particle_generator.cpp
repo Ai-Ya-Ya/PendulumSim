@@ -1,6 +1,18 @@
 #include "particle_generator.h"
 
-ParticleGenerator::ParticleGenerator(Shader shader, unsigned int amount, glm::vec3 color, float decay)
+float ParticleGenerator::particle_quad[12] = {
+        0.0f, 1.0f,
+        1.0f, 0.0f,
+        0.0f, 0.0f,
+
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+        1.0f, 0.0f
+};
+unsigned int ParticleGenerator::VAO = 1;
+unsigned int ParticleGenerator::VBO = 1;
+
+ParticleGenerator::ParticleGenerator(Shader* shader, unsigned int amount, glm::vec3 color, float decay)
     : shader(shader), amount(amount), color(color, 1.0f), decay(decay)
 {
     this->init();
@@ -32,13 +44,13 @@ void ParticleGenerator::Draw()
     // use additive blending to give it a 'glow' effect
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    this->shader.use();
+    this->shader->use();
     for (const Particle& particle : this->particles)
     {
         if (particle.Life > 0.0f)
         {
-            this->shader.setVector2f("offset", particle.Position);
-            this->shader.setVector4f("ourColor", particle.Color);
+            this->shader->setVector2f("offset", particle.Position);
+            this->shader->setVector4f("ourColor", particle.Color);
             glBindVertexArray(this->VAO);
             glDrawArrays(GL_TRIANGLES, 0, 6);
             glBindVertexArray(0);
@@ -48,11 +60,9 @@ void ParticleGenerator::Draw()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void ParticleGenerator::init()
-{
+void ParticleGenerator::setup() {
     // set up mesh and attribute properties
-    unsigned int VBO;
-    float particle_quad[] = {
+    float particle_quad2[] = {
         0.0f, 1.0f,
         1.0f, 0.0f,
         0.0f, 0.0f,
@@ -61,16 +71,41 @@ void ParticleGenerator::init()
         1.0f, 1.0f,
         1.0f, 0.0f
     };
-    glGenVertexArrays(1, &this->VAO);
+    for (int i = 0; i < sizeof(particle_quad2) / sizeof(particle_quad2[0]); ++i) particle_quad[i] = particle_quad2[i];
+    glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-    glBindVertexArray(this->VAO);
+    glBindVertexArray(VAO);
     // fill mesh buffer
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(particle_quad), particle_quad, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(particle_quad2), particle_quad, GL_STATIC_DRAW);
     // set mesh attributes
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glBindVertexArray(0);
+}
+
+void ParticleGenerator::init()
+{
+    //// set up mesh and attribute properties
+    //float particle_quad[] = {
+    //    0.0f, 1.0f,
+    //    1.0f, 0.0f,
+    //    0.0f, 0.0f,
+
+    //    0.0f, 1.0f,
+    //    1.0f, 1.0f,
+    //    1.0f, 0.0f
+    //};
+    //glGenVertexArrays(1, &VAO);
+    //glGenBuffers(1, &VBO);
+    //glBindVertexArray(VAO);
+    //// fill mesh buffer
+    //glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(particle_quad), particle_quad, GL_STATIC_DRAW);
+    //// set mesh attributes
+    //glEnableVertexAttribArray(0);
+    //glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    //glBindVertexArray(0);
 
     // create this->amount default particle instances
     for (unsigned int i = 0; i < this->amount; ++i)

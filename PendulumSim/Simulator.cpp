@@ -9,6 +9,7 @@
 #include <vector>
 #include <boost/numeric/odeint.hpp>
 #include "particle_generator.h"
+#include "spring_pendulum.h"
 
 typedef std::vector< float > state_type;
 
@@ -77,13 +78,21 @@ int main() {
 	glViewport(0, 0, 800, 600);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	Shader ourShader("shader_practice.vert", "shader_practice.frag");
-	Shader particleShader("particle.vert", "particle.frag");
-	
-	ParticleGenerator* Particles;
-	Particles = new ParticleGenerator(particleShader, 5000, color3, 0.1f);
+	Shader* ourShader = new Shader("shader_practice.vert", "shader_practice.frag");
+	Shader* particleShader = new Shader("particle.vert", "particle.frag");
 
-	unsigned int VAO, VBO, EBO;
+	// setup classes before we even create any instances of them
+	ParticleGenerator::setup();
+	Pendulum::init();
+	
+	//ParticleGenerator* Particles;
+	//Particles = new ParticleGenerator(particleShader, 5000, color3, 0.1f);
+
+	SpringPendulum* test_pendulum = new SpringPendulum(ourShader, particleShader, spring_state, spring_constant, color3);
+	SpringPendulum* test_pendulum2 = new SpringPendulum(ourShader, particleShader, spring_state, spring_constant + 1.0f, color1);
+	SpringPendulum* test_pendulum3 = new SpringPendulum(ourShader, particleShader, spring_state, spring_constant - 1.0f, color2);
+
+	/*unsigned int VAO, VBO, EBO;
 	glGenBuffers(1, &VBO);
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &EBO);
@@ -98,6 +107,7 @@ int main() {
 	glEnableVertexAttribArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);*/
 	
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -114,59 +124,69 @@ int main() {
 		// time updates must be done as close to each other as possible to avoid "skipped" time
 
 		// solve diffeq
-		boost::numeric::odeint::integrate(real_pendulum, theta, time - deltaTime, time, deltaTime / NUM_STEPS);
-		boost::numeric::odeint::integrate(spring_pendulum, spring_state, time - deltaTime, time, deltaTime / NUM_STEPS);
+		//boost::numeric::odeint::integrate(real_pendulum, theta, time - deltaTime, time, deltaTime / NUM_STEPS);
+		//boost::numeric::odeint::integrate(spring_pendulum, spring_state, time - deltaTime, time, deltaTime / NUM_STEPS);
 
-		// pendulum with "physics I" equation
+		//// pendulum with "physics I" equation
 		glm::mat4 trans = glm::mat4(1.0f);
-		trans = glm::translate(trans, glm::vec3(0.0f, 0.5f, 0.0f));
-		trans = glm::rotate(trans, initial_angle*cos(angular_frequency * time), glm::vec3(0.0f, 0.0f, 1.0f));
-		trans = glm::translate(trans, glm::vec3(0.0f, -0.5f, 0.0f));
+		//trans = glm::translate(trans, glm::vec3(0.0f, 0.5f, 0.0f));
+		//trans = glm::rotate(trans, initial_angle*cos(angular_frequency * time), glm::vec3(0.0f, 0.0f, 1.0f));
+		//trans = glm::translate(trans, glm::vec3(0.0f, -0.5f, 0.0f));
 
-		unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
-		unsigned int colorLoc = glGetUniformLocation(ourShader.ID, "ourColor");
-		glUniform3fv(colorLoc, 1, glm::value_ptr(color1));
+		unsigned int transformLoc = glGetUniformLocation(ourShader->ID, "transform");
+		//glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+		unsigned int colorLoc = glGetUniformLocation(ourShader->ID, "ourColor");
+		//glUniform3fv(colorLoc, 1, glm::value_ptr(color1));
 
-		ourShader.use();
-		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		ourShader->use();
+		//glBindVertexArray(VAO);
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-		// pendulum with diffeq
-		trans = glm::mat4(1.0f);
-		trans = glm::translate(trans, glm::vec3(0.0f, 0.5f, 0.0f));
-		trans = glm::rotate(trans, theta[0], glm::vec3(0.0f, 0.0f, 1.0f));
-		trans = glm::translate(trans, glm::vec3(0.0f, -0.5f, 0.0f));
+		//// pendulum with diffeq
+		//trans = glm::mat4(1.0f);
+		//trans = glm::translate(trans, glm::vec3(0.0f, 0.5f, 0.0f));
+		//trans = glm::rotate(trans, theta[0], glm::vec3(0.0f, 0.0f, 1.0f));
+		//trans = glm::translate(trans, glm::vec3(0.0f, -0.5f, 0.0f));
 
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
-		glUniform3fv(colorLoc, 1, glm::value_ptr(color2));
+		//glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+		//glUniform3fv(colorLoc, 1, glm::value_ptr(color2));
 
-		// glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		//glBindVertexArray(VAO);
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		//glBindVertexArray(0);
+
+		//// spring pendulum
+		//trans = glm::mat4(1.0f);
+		//trans = glm::translate(trans, glm::vec3(0.0f, 0.5f, 0.0f));
+		//trans = glm::rotate(trans, spring_state[2], glm::vec3(0.0f, 0.0f, 1.0f));
+		//trans = glm::scale(trans, glm::vec3(1.0f, 1.0f + spring_state[0], 1.0f));
+		//trans = glm::translate(trans, glm::vec3(0.0f, -0.5f, 0.0f));
+
+		//glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+		//glUniform3fv(colorLoc, 1, glm::value_ptr(color3));
+
+		//// glBindVertexArray(VAO);
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		//Particles->Update(deltaTime, glm::vec2((1.0f + spring_state[0]) * sin(spring_state[2]), 0.5f - (1.0f + spring_state[0]) * cos(spring_state[2])), 1);
+		//Particles->Draw();
 
 		// spring pendulum
-		trans = glm::mat4(1.0f);
-		trans = glm::translate(trans, glm::vec3(0.0f, 0.5f, 0.0f));
-		trans = glm::rotate(trans, spring_state[2], glm::vec3(0.0f, 0.0f, 1.0f));
-		trans = glm::scale(trans, glm::vec3(1.0f, 1.0f + spring_state[0], 1.0f));
-		trans = glm::translate(trans, glm::vec3(0.0f, -0.5f, 0.0f));
+		test_pendulum->update(time, deltaTime);
+		test_pendulum2->update(time, deltaTime);
+		test_pendulum3->update(time, deltaTime);
 
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
-		glUniform3fv(colorLoc, 1, glm::value_ptr(color3));
-
-		// glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-		Particles->Update(deltaTime, glm::vec2((1.0f + spring_state[0]) * sin(spring_state[2]), 0.5f - (1.0f + spring_state[0]) * cos(spring_state[2])), 1);
-		Particles->Draw();
+		test_pendulum->draw();
+		test_pendulum2->draw();
+		test_pendulum3->draw();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
-	glDeleteVertexArrays(1, &VAO);
-	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &EBO);
+	//glDeleteVertexArrays(1, &VAO);
+	//glDeleteBuffers(1, &VBO);
+	//glDeleteBuffers(1, &EBO);
 	glfwTerminate();
 	return 0;
 }

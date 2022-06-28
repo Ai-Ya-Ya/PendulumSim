@@ -22,11 +22,17 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="own_shaders.cpp" />
     <ClCompile Include="particle_generator.cpp" />
+    <ClCompile Include="pendulum.cpp" />
     <ClCompile Include="Simulator.cpp" />
+    <ClCompile Include="spring_pendulum.cpp" />
+    <ClCompile Include="spring_pendulum_diffeq.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="own_shaders.h" />
     <ClInclude Include="particle_generator.h" />
+    <ClInclude Include="pendulum.h" />
+    <ClInclude Include="spring_pendulum.h" />
+    <ClInclude Include="spring_pendulum_diffeq.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="particle.frag" />
