@@ -61,3 +61,12 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+###############################################################################
+# kick glad.c off language analytics
+#
+# glad.c is just a header-only library, but it's making my project
+# display as a C project, so I'm kicking it off GitHub language analytics.
+###############################################################################
+
+glad.c   -linguist-vendored
