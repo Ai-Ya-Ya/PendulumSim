@@ -8,3 +8,4 @@ Written in OpenGL, with motion equations solved by [odeint](https://www.boost.or
 ### Changelog
 
 * **15.06.22** - added spring pendulum and implemented particle trails. 
+* **29.06.22** - added double pendulum and refactored code to be object-oriented. 
