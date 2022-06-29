@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="double_pendulum.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="own_shaders.cpp" />
     <ClCompile Include="particle_generator.cpp" />
@@ -28,6 +29,7 @@
     <ClCompile Include="spring_pendulum_diffeq.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="double_pendulum.h" />
     <ClInclude Include="own_shaders.h" />
     <ClInclude Include="particle_generator.h" />
     <ClInclude Include="pendulum.h" />

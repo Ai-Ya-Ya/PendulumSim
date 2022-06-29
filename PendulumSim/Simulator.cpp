@@ -10,18 +10,24 @@
 #include <boost/numeric/odeint.hpp>
 #include "particle_generator.h"
 #include "spring_pendulum.h"
+#include "double_pendulum.h"
 
 typedef std::vector< float > state_type;
 
 constexpr int NUM_STEPS = 100;
 constexpr float initial_angle = glm::radians(10.0f);
+constexpr float initial_angle2 = glm::radians(130.0f);
 constexpr float gravity = 9.81f;
 constexpr float spring_constant = 75.0f;
+constexpr float time_constant = 1.0f;
+constexpr int window_size = 1000;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void real_pendulum(const state_type& x, state_type& dxdt, const double /* t */);
 void spring_pendulum(const state_type& x, state_type& dxdt, const double /* t */);
+glm::vec3 hsl_to_rgb(float h, float s, float l);
+float hue_to_rgb(float p, float q, float t);
 
 float vertices[] = {
 	 0.005f,  0.5f, 0.0f,  // top right
@@ -52,7 +58,7 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-	GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(window_size, window_size, "Pendulum Simulator", NULL, NULL);
 	if (window == NULL) {
 		std::cout << "Failed to create window. Something went wrong." << std::endl;
 		glfwTerminate();
@@ -75,7 +81,11 @@ int main() {
 	spring_state[2] = initial_angle;
 	spring_state[3] = 0.0f;
 
-	glViewport(0, 0, 800, 600);
+	state_type double_state(4, 0.0f); // theta1, theta2, p1, p2
+	double_state[0] = initial_angle;
+	double_state[1] = initial_angle2;
+
+	glViewport(0, 0, window_size, window_size);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	Shader* ourShader = new Shader("shader_practice.vert", "shader_practice.frag");
@@ -88,9 +98,16 @@ int main() {
 	//ParticleGenerator* Particles;
 	//Particles = new ParticleGenerator(particleShader, 5000, color3, 0.1f);
 
-	SpringPendulum* test_pendulum = new SpringPendulum(ourShader, particleShader, spring_state, spring_constant, color3);
-	SpringPendulum* test_pendulum2 = new SpringPendulum(ourShader, particleShader, spring_state, spring_constant + 1.0f, color1);
-	SpringPendulum* test_pendulum3 = new SpringPendulum(ourShader, particleShader, spring_state, spring_constant - 1.0f, color2);
+	std::vector<Pendulum*> pendulums;
+	int num_pendulums = 10;
+	/*for (int i = 0; i < num_pendulums; ++i) {
+		pendulums.push_back(new SpringPendulum(ourShader, particleShader, spring_state, spring_constant, hsl_to_rgb(((float) i) / num_pendulums, 1.0f, 0.5f)));
+		spring_state[0] -= 0.0001f;
+	}*/
+	for (int i = 0; i < num_pendulums; ++i) {
+		pendulums.push_back(new DoublePendulum(ourShader, particleShader, double_state, hsl_to_rgb(((float)i) / num_pendulums, 1.0f, 0.5f)));
+		double_state[1] += glm::radians(0.1f);
+	}
 
 	/*unsigned int VAO, VBO, EBO;
 	glGenBuffers(1, &VBO);
@@ -118,7 +135,7 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// get changes in time
-		float time = (float) glfwGetTime();
+		float time = (float) time_constant * glfwGetTime();
 		deltaTime = time - lastFrame; 
 		lastFrame = time;
 		// time updates must be done as close to each other as possible to avoid "skipped" time
@@ -172,13 +189,10 @@ int main() {
 		//Particles->Draw();
 
 		// spring pendulum
-		test_pendulum->update(time, deltaTime);
-		test_pendulum2->update(time, deltaTime);
-		test_pendulum3->update(time, deltaTime);
-
-		test_pendulum->draw();
-		test_pendulum2->draw();
-		test_pendulum3->draw();
+		for (Pendulum*& p : pendulums) {
+			p->update(time, deltaTime);
+			p->draw();
+		}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -209,4 +223,22 @@ void spring_pendulum(const state_type& x, state_type& dxdt, const double /* t */
 	dxdt[1] = (1.0f + x[0]) * x[3] * x[3] - spring_constant * x[0] + gravity * cos(x[2]); // mass 1
 	dxdt[2] = x[3];
 	dxdt[3] = -gravity * sin(x[2]) / (1.0f + x[0]) - 2 * x[1] * x[3] / (1.0f + x[0]);
+}
+
+glm::vec3 hsl_to_rgb(float h, float s, float l) {
+	if (s == 0.0f) return glm::vec3(1.0f, 1.0f, 1.0f);
+
+	float q = l < 0.5f ? l * (1 + s) : l + s - l * s;
+	float p = 2 * l - q;
+
+	return glm::vec3(hue_to_rgb(p, q, h + 1.0f / 3), hue_to_rgb(p, q, h), hue_to_rgb(p, q, h - 1.0f / 3));
+}
+
+float hue_to_rgb(float p, float q, float t) {
+	if (t < 0.0f) t += 1;
+	else if (t > 1.0f) t -= 1;
+	if (t < 1.0f / 6) return p + (q - p) * 6 * t;
+	if (t < 1.0f / 2) return q;
+	if (t < 2.0f / 3) return p + (q - p) * (2.0f / 3 - t) * 6;
+	return p;
 }
