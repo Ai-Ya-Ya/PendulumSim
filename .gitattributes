@@ -68,4 +68,4 @@
 # glad.c is just a header-only library, but it's making my project
 # display as a C project, so I'm kicking it off GitHub language analytics.
 ###############################################################################
-PendulumSim/*.c linguist-vendored
+PendulumSim/glad.c linguist-vendored
