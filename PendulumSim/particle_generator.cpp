@@ -84,6 +84,10 @@ void ParticleGenerator::setup() {
     glBindVertexArray(0);
 }
 
+void ParticleGenerator::change_decay(float d) {
+    decay = d;
+}
+
 void ParticleGenerator::init()
 {
     //// set up mesh and attribute properties

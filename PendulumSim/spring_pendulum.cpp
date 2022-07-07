@@ -6,6 +6,10 @@ SpringPendulum::SpringPendulum(Shader* o_shader, Shader* p_shader, state_type st
 	trajectory = new SpringPendulumDiffeq(k);
 }
 
+void SpringPendulum::operator() (float t, float dt) {
+	update(t, dt);
+}
+
 void SpringPendulum::update(float time, float dt) {
 	time -= initial_delay;
 	if (time >= 0.0f) {
@@ -23,12 +27,14 @@ void SpringPendulum::update(float time, float dt) {
 }
 
 void SpringPendulum::draw() {
+	glEnable(GL_MULTISAMPLE);
 	this->object_shader->use();
 	this->object_shader->setVector3f("ourColor", color);
 	this->object_shader->setMatrix4("transform", trans);
 	glBindVertexArray(this->VAO);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
+	glDisable(GL_MULTISAMPLE);
 
 	particles->Draw();
 }

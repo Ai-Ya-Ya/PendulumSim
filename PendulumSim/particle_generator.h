@@ -38,6 +38,7 @@ public:
     static unsigned int VAO;
     static unsigned int VBO;
     static float particle_quad[12];
+    void change_decay(float d);
 private:
     // state
     std::vector<Particle> particles;

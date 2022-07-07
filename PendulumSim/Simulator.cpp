@@ -11,16 +11,21 @@
 #include "particle_generator.h"
 #include "spring_pendulum.h"
 #include "double_pendulum.h"
+#include "opencv2\opencv.hpp"
 
 typedef std::vector< float > state_type;
 
 constexpr int NUM_STEPS = 100;
 constexpr float initial_angle = glm::radians(10.0f);
-constexpr float initial_angle2 = glm::radians(130.0f);
+constexpr float initial_angle2 = glm::radians(177.0f);
 constexpr float gravity = 9.81f;
 constexpr float spring_constant = 75.0f;
-constexpr float time_constant = 1.0f;
+constexpr int fps_factor = 32;
+constexpr float time_constant = 1.0f / fps_factor;
 constexpr int window_size = 1000;
+constexpr int fps = 30;
+constexpr float deltaTime = time_constant / fps;
+constexpr int video_length = 60; // length of the video, in seconds
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -28,6 +33,8 @@ void real_pendulum(const state_type& x, state_type& dxdt, const double /* t */);
 void spring_pendulum(const state_type& x, state_type& dxdt, const double /* t */);
 glm::vec3 hsl_to_rgb(float h, float s, float l);
 float hue_to_rgb(float p, float q, float t);
+void saveFramebuffer(GLFWwindow* window);
+void test_func(void);
 
 float vertices[] = {
 	 0.005f,  0.5f, 0.0f,  // top right
@@ -44,7 +51,7 @@ unsigned int indices[] = {  // note that we start from 0!
 };
 
 float lastFrame = 0.0f;
-float deltaTime = 0.0f;
+float elapsed_time = 0.0f;
 
 glm::vec3 color1(1.0f, 0.0f, 0.0f);
 glm::vec3 color2(0.0f, 0.0f, 1.0f);
@@ -56,6 +63,7 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_SAMPLES, 10); // anti-aliasing
 	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
 	GLFWwindow* window = glfwCreateWindow(window_size, window_size, "Pendulum Simulator", NULL, NULL);
@@ -95,18 +103,19 @@ int main() {
 	ParticleGenerator::setup();
 	Pendulum::init();
 	
-	//ParticleGenerator* Particles;
-	//Particles = new ParticleGenerator(particleShader, 5000, color3, 0.1f);
+	ParticleGenerator* Particles;
+	Particles = new ParticleGenerator(particleShader, 5000, color3, 0.1f);
 
 	std::vector<Pendulum*> pendulums;
-	int num_pendulums = 10;
+	int num_pendulums = 1000;
 	/*for (int i = 0; i < num_pendulums; ++i) {
 		pendulums.push_back(new SpringPendulum(ourShader, particleShader, spring_state, spring_constant, hsl_to_rgb(((float) i) / num_pendulums, 1.0f, 0.5f)));
 		spring_state[0] -= 0.0001f;
 	}*/
+
 	for (int i = 0; i < num_pendulums; ++i) {
 		pendulums.push_back(new DoublePendulum(ourShader, particleShader, double_state, hsl_to_rgb(((float)i) / num_pendulums, 1.0f, 0.5f)));
-		double_state[1] += glm::radians(0.1f);
+		double_state[1] += glm::radians(0.00001f);
 	}
 
 	/*unsigned int VAO, VBO, EBO;
@@ -131,14 +140,10 @@ int main() {
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 
+		//lastFrame = (float)time_constant * glfwGetTime();
+
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-
-		// get changes in time
-		float time = (float) time_constant * glfwGetTime();
-		deltaTime = time - lastFrame; 
-		lastFrame = time;
-		// time updates must be done as close to each other as possible to avoid "skipped" time
 
 		// solve diffeq
 		//boost::numeric::odeint::integrate(real_pendulum, theta, time - deltaTime, time, deltaTime / NUM_STEPS);
@@ -187,12 +192,18 @@ int main() {
 
 		//Particles->Update(deltaTime, glm::vec2((1.0f + spring_state[0]) * sin(spring_state[2]), 0.5f - (1.0f + spring_state[0]) * cos(spring_state[2])), 1);
 		//Particles->Draw();
-
-		// spring pendulum
+		// 
+		// get changes in time
+		//deltaTime = (float)(time_constant * glfwGetTime() - lastFrame);
+		elapsed_time += 0.0f;
+		// time updates must be done as close to each other as possible to avoid "skipped" time
+		
 		for (Pendulum*& p : pendulums) {
-			p->update(time, deltaTime);
+			p->update(0.0f, deltaTime);
 			p->draw();
 		}
+
+		saveFramebuffer(window);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -241,4 +252,52 @@ float hue_to_rgb(float p, float q, float t) {
 	if (t < 1.0f / 2) return q;
 	if (t < 2.0f / 3) return p + (q - p) * (2.0f / 3 - t) * 6;
 	return p;
+}
+
+void saveFramebuffer(GLFWwindow* window) {
+
+	static int fid = 0;
+	static cv::VideoWriter outputVideo;
+	static double start_time;
+	//static int height, width;
+	int const total_frame = video_length * fps * fps_factor;
+
+	//int const total_frame = 120;
+	if (fid == 0) {
+		/*RECT WindowRect;
+		GetWindowRect(hWnd, &WindowRect);
+		width = WindowRect.right - WindowRect.left;
+		height = WindowRect.bottom - WindowRect.top;*/
+		outputVideo.open("video.avi",  /*Video Name*/
+			cv::VideoWriter::fourcc('M', 'J', 'P', 'G'),                         /* fourcc */
+			(double)fps,                      /*Yuchen: Frame Rate */
+			cv::Size(window_size, window_size),  /*Yuchen: Frame Size of the Video  */
+			true);                      /*Yuchen: Is Color                 */
+		start_time = glfwGetTime();
+	}
+	else if (fid < total_frame) {
+		cv::Mat pixels( /* num of rows */ window_size, /* num of cols */ window_size, CV_8UC3);
+		glReadPixels(0, 0, window_size, window_size, GL_BGR, GL_UNSIGNED_BYTE, pixels.data);
+		//cv::Mat cv_pixels( /* num of rows */ window_size, /* num of cols */ window_size, CV_8UC3);
+		//for (int y = 0; y < window_size; y++) for (int x = 0; x < window_size; x++)
+		//{
+		//	cv_pixels.at<cv::Vec3b>(y, x)[2] = pixels.at<cv::Vec3b>(window_size - y - 1, x)[0];
+		//	cv_pixels.at<cv::Vec3b>(y, x)[1] = pixels.at<cv::Vec3b>(window_size - y - 1, x)[1];
+		//	cv_pixels.at<cv::Vec3b>(y, x)[0] = pixels.at<cv::Vec3b>(window_size - y - 1, x)[2];
+		//}
+		outputVideo << pixels;
+		if (fid % 1000 == 0) {
+			std::cout << fid << " out of " << total_frame << " frames generated.\tProgress: " << fid * 100.0 / total_frame << "%.\tEstimated time left: " << 1000 * ((glfwGetTime() - start_time) / fid) * (total_frame * 1.0 - fid) / (60 * 1000) << " minutes." << std::endl;
+		}
+	}
+	else if (fid == total_frame) {
+		std::cout << "Total rendering time : " << (glfwGetTime() - start_time) / 60 << " minutes." << std::endl;
+		outputVideo.release();
+		glfwSetWindowShouldClose(window, true);
+	}
+	fid++;
+}
+
+void test_func(void) {
+	std::cout << "Hello World!" << std::endl;
 }

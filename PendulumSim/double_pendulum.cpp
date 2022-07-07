@@ -3,6 +3,10 @@
 DoublePendulum::DoublePendulum(Shader* o_shader, Shader* p_shader, state_type state, glm::vec3 color)
 	: Pendulum(o_shader, p_shader, state, color), trans2(1.0f) {}
 
+void DoublePendulum::operator() (float t, float dt) {
+	update(t, dt);
+}
+
 void DoublePendulum::update(float time, float dt) {
 	time -= initial_delay;
 	if (time >= 0.0f) {
@@ -26,6 +30,7 @@ void DoublePendulum::update(float time, float dt) {
 }
 
 void DoublePendulum::draw() {
+	glEnable(GL_MULTISAMPLE);
 	this->object_shader->use();
 	this->object_shader->setVector3f("ourColor", color);
 	this->object_shader->setMatrix4("transform", trans);
@@ -34,6 +39,7 @@ void DoublePendulum::draw() {
 	this->object_shader->setMatrix4("transform", trans2);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
+	glDisable(GL_MULTISAMPLE);
 
 	particles->Draw();
 }

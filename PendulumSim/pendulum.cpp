@@ -13,10 +13,10 @@ unsigned int Pendulum::indices[6] = {  // note that we start from 0!
 	1, 2, 3   // second Triangle
 };
 float Pendulum::gravity = 9.81f;
-int Pendulum::n_particles = 5000;
-float Pendulum::decay = 0.5f;
+int Pendulum::n_particles = 10000;
+float Pendulum::decay = 2.0f;
 int Pendulum::n_steps = 100;
-float Pendulum::initial_delay = 3.0f; // 3-second delay
+float Pendulum::initial_delay = 0.0f; // initial "frozen in time" delay at the start
 
 // set up openGL drawing things
 void Pendulum::init() {

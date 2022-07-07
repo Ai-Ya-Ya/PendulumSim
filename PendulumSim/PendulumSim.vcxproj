@@ -110,8 +110,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\Allen\Documents\OpenGL\Libraries\Include;C:\Users\Allen\Documents\OpenGL\Libraries\Include\glm;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Allen\Documents\OpenGL\Libraries\Libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\opencv\build\include;C:\Users\Allen\Documents\OpenGL\Libraries\Include;C:\Users\Allen\Documents\OpenGL\Libraries\Include\glm;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\Allen\Documents\Permanent Downloads\openh264-1.8.0-win64.dll;C:\opencv\build\x64\vc15\lib;C:\Users\Allen\Documents\OpenGL\Libraries\Libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -156,8 +156,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Program Files\boost\boost_1_79_0;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_world460d.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Allen\Documents\Permanent Downloads\openh264-1.8.0-win64.dll;C:\Program Files\boost\boost_1_79_0;C:\opencv\build\x64\vc15\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

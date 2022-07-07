@@ -9,6 +9,8 @@ class DoublePendulum :
 public:
 
     DoublePendulum(Shader* o_shader, Shader* p_shader, state_type state, glm::vec3 color);
+
+    virtual void operator() (float t, float dt) override;
     virtual void update(float t, float dt) override;
     virtual void draw() override;
     virtual glm::vec2 location() override;

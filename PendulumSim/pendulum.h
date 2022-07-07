@@ -21,6 +21,7 @@ public:
 	Pendulum(Shader* o_shader, Shader* p_shader, state_type state, glm::vec3 color);
 	static void init();
 
+	virtual void operator() (float t, float dt) = 0;
 	virtual void update(float t, float dt) = 0;
 	virtual void draw() = 0;
 	virtual glm::vec2 location() = 0;
