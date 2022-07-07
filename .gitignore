@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# everything below this are my edits, and not visual studio's base .gititnore
+
+# no need to commit rendered video files
+video*.avi
