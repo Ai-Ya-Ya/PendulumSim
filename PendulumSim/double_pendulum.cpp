@@ -17,7 +17,7 @@ void DoublePendulum::update(float time, float dt) {
 
 	// update position
 	trans = glm::mat4(1.0f);
-	trans = glm::translate(trans, glm::vec3(0.0f, 0.5f, 0.0f));
+	//trans = glm::translate(trans, glm::vec3(0.0f, 0.5f, 0.0f));
 	trans = glm::rotate(trans, state[0], glm::vec3(0.0f, 0.0f, 1.0f));
 	trans = glm::scale(trans, glm::vec3(1.0f, 0.5f, 1.0f));
 	trans = glm::translate(trans, glm::vec3(0.0f, -0.5f, 0.0f));
@@ -57,5 +57,6 @@ void DoublePendulum::diffeq(const state_type& x, state_type& dxdt, const double 
 
 glm::vec2 DoublePendulum::first_location() {
 	//std::cout << 0.5f * sin(state[0]) << " " << 0.5f * (1 - cos(state[0])) << std::endl;
-	return glm::vec2(0.5f * sin(state[0]), 0.5f * (1 - cos(state[0])));
+	//return glm::vec2(0.5f * sin(state[0]), 0.5f * (1 - cos(state[0])));
+	return glm::vec2(0.5f * sin(state[0]), 0.5f * (-cos(state[0])));
 }

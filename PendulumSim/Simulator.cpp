@@ -16,7 +16,7 @@
 typedef std::vector< float > state_type;
 
 constexpr int NUM_STEPS = 100;
-constexpr float initial_angle = glm::radians(10.0f);
+constexpr float initial_angle = glm::radians(160.0f);
 constexpr float initial_angle2 = glm::radians(177.0f);
 constexpr float gravity = 9.81f;
 constexpr float spring_constant = 75.0f;
@@ -25,7 +25,7 @@ constexpr float time_constant = 1.0f / fps_factor;
 constexpr int window_size = 1000;
 constexpr int fps = 30;
 constexpr float deltaTime = time_constant / fps;
-constexpr int video_length = 60; // length of the video, in seconds
+constexpr int video_length = 30; // length of the video, in seconds
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
